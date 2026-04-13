@@ -1,0 +1,15 @@
+# Per-machine KB configuration
+# Copy this file to .kb-config.yml and edit as needed.
+# .kb-config.yml is gitignored — each machine has its own.
+
+# Search tier: "lite" (grep-based) or "full" (semantic vector search)
+tier: lite
+
+# Absolute path to the knowledge base root
+kb_root: ~/projects/knowledge-base
+
+# Optional: hint which domains are active on this machine.
+# Used to prioritise context loading at session start.
+# These are just hints — all domains remain accessible.
+domains:
+  - general

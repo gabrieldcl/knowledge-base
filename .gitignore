@@ -1,0 +1,4 @@
+.kb-config.yml
+.kb/sessions/
+.kb/write.lock/
+*.tmp.*
