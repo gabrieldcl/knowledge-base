@@ -5,11 +5,19 @@ query.py - Semantic search over KB notes (Full tier).
 Runs a hybrid search combining vector similarity and grep-based keyword
 matching, then returns ranked results for Claude to synthesise.
 
+Embedding provider is selected via the EMBED_PROVIDER env var (must match
+what was used in embed.py):
+  - "voyage" (default) — Voyage AI voyage-code-3
+  - "openai"           — OpenAI text-embedding-3-small
+
 Requirements:
-    pip install lancedb openai python-frontmatter
+    pip install lancedb python-frontmatter voyageai   # Voyage (default)
+    pip install lancedb python-frontmatter openai     # OpenAI
 
 Environment:
-    OPENAI_API_KEY  - required for OpenAI embeddings
+    VOYAGE_API_KEY  - required when EMBED_PROVIDER=voyage (default)
+    OPENAI_API_KEY  - required when EMBED_PROVIDER=openai
+    EMBED_PROVIDER  - "voyage" (default) or "openai"
     KB_ROOT         - path to knowledge base root (default: ~/projects/knowledge-base)
 
 Usage:
@@ -23,24 +31,40 @@ import argparse
 import subprocess
 from pathlib import Path
 
+EMBED_PROVIDER = os.environ.get("EMBED_PROVIDER", "voyage")
+
 try:
     import lancedb
-    import openai
+    if EMBED_PROVIDER == "openai":
+        import openai
+    else:
+        import voyageai
 except ImportError as e:
     print(f"[kb] Missing dependency: {e}")
-    print("[kb] Run: pip install lancedb openai python-frontmatter")
+    if EMBED_PROVIDER == "openai":
+        print("[kb] Run: pip install lancedb openai python-frontmatter")
+    else:
+        print("[kb] Run: pip install lancedb voyageai python-frontmatter")
     sys.exit(1)
 
 KB_ROOT = Path(os.environ.get("KB_ROOT", Path.home() / "projects/knowledge-base"))
 INDEX_DIR = KB_ROOT / ".kb" / "full" / "index"
-EMBED_MODEL = "text-embedding-3-small"
 
-client = openai.OpenAI()
+if EMBED_PROVIDER == "openai":
+    _client = openai.OpenAI()
+    EMBED_MODEL = "text-embedding-3-small"
+else:
+    _client = voyageai.Client()
+    EMBED_MODEL = "voyage-code-3"
 
 
 def embed_text(text: str) -> list[float]:
-    response = client.embeddings.create(input=text, model=EMBED_MODEL)
-    return response.data[0].embedding
+    if EMBED_PROVIDER == "openai":
+        response = _client.embeddings.create(input=text, model=EMBED_MODEL)
+        return response.data[0].embedding
+    else:
+        result = _client.embed([text], model=EMBED_MODEL)
+        return result.embeddings[0]
 
 
 def vector_search(query: str, domain: str | None, top: int) -> list[dict]:

@@ -189,15 +189,34 @@ The system will warn you when the Lite tier is approaching its limits:
 
 When you see this (or when grep starts missing things you know are in the KB):
 
+### Choosing an embedding provider
+
+The default is **Voyage AI** — Anthropic's recommended embedding partner, with a
+model (`voyage-code-3`) specifically optimised for code. The free tier covers
+200M tokens/month, which is more than enough for a personal KB.
+
+| Provider | Model | Free tier | Key env var |
+|---|---|---|---|
+| **Voyage AI** (default) | `voyage-code-3` | 200M tokens/month | `VOYAGE_API_KEY` |
+| OpenAI | `text-embedding-3-small` | None | `OPENAI_API_KEY` |
+
+Get a Voyage API key at [voyageai.com](https://www.voyageai.com) — it takes about
+a minute. Note: Anthropic's Claude API key **cannot** be used for embeddings —
+Claude is a generative model and Anthropic does not expose an embeddings endpoint.
+
 ### Full tier setup
 
 ```bash
-# Install Python dependencies
-pip install lancedb openai python-frontmatter
+# Install Python dependencies (Voyage, recommended)
+pip install lancedb voyageai python-frontmatter
 
-# Set your embeddings API key
-export OPENAI_API_KEY=sk-...
-# Add to ~/.zshrc or ~/.bashrc to persist
+# Or for OpenAI:
+# pip install lancedb openai python-frontmatter
+
+# Set your API key (add to ~/.zshrc or ~/.bashrc to persist)
+export VOYAGE_API_KEY=pa-...
+# Or: export OPENAI_API_KEY=sk-...
+#     export EMBED_PROVIDER=openai
 
 # Build the initial vector index
 python3 ~/projects/knowledge-base/.kb/full/embed.py
@@ -206,22 +225,8 @@ python3 ~/projects/knowledge-base/.kb/full/embed.py
 # tier: full
 ```
 
-After that, `embed.py` keeps the index up to date (run it after bulk note additions,
-or add it to the session-stop hook if you prefer automatic indexing).
-
-### Using local embeddings (no API key)
-
-If you prefer not to use an external API, install [Ollama](https://ollama.com) and
-swap the embedding model in `embed.py` and `query.py`:
-
-```python
-# Replace the OpenAI client with:
-import ollama
-def embed_text(text: str) -> list[float]:
-    return ollama.embeddings(model="nomic-embed-text", prompt=text)["embedding"]
-```
-
-No server needs to run permanently — Ollama starts on demand.
+After that, `embed.py` keeps the index up to date — run it after bulk note
+additions, or add it to the session-stop hook for automatic indexing.
 
 ---
 
