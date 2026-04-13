@@ -6,11 +6,13 @@ Scans all markdown files in the KB, embeds any that are new or updated,
 and stores them in a local LanceDB table at .kb/full/index/.
 
 Embedding provider is selected via the EMBED_PROVIDER env var:
-  - "voyage" (default) — Voyage AI, Anthropic's recommended partner.
+  - "voyage" (default) — Voyage AI, Anthropic's recommended embedding partner.
                          Best for code. Free tier: 200M tokens/month.
                          Get a key at https://www.voyageai.com
-  - "openai"           — OpenAI text-embedding-3-small.
-                         Pay-per-token, no free tier.
+  - "openai"           — OpenAI text-embedding-3-small. Pay-per-token.
+
+Note: Anthropic's Claude API key cannot be used for embeddings — Claude is a
+generative model only. Voyage AI is Anthropic's recommended embedding solution.
 
 Requirements:
     pip install lancedb python-frontmatter voyageai   # Voyage (default)
