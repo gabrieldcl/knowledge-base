@@ -1,5 +1,7 @@
 .kb-config.yml
 .kb/sessions/
 .kb/write.lock/
+.kb/full/venv/
+.kb/full/index/
 *.tmp.*
 .env
