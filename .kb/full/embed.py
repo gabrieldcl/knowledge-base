@@ -64,13 +64,14 @@ else:
     EMBED_MODEL = "voyage-code-3"
 
 
-def embed_text(text: str) -> list[float]:
+def embed_texts(texts: list[str]) -> list[list[float]]:
+    """Embed a batch of texts in a single API call."""
     if EMBED_PROVIDER == "openai":
-        response = _client.embeddings.create(input=text, model=EMBED_MODEL)
-        return response.data[0].embedding
+        response = _client.embeddings.create(input=texts, model=EMBED_MODEL)
+        return [r.embedding for r in response.data]
     else:
-        result = _client.embed([text], model=EMBED_MODEL)
-        return result.embeddings[0]
+        result = _client.embed(texts, model=EMBED_MODEL)
+        return result.embeddings
 
 
 def file_hash(path: Path) -> str:
@@ -126,10 +127,11 @@ def run(rebuild: bool = False):
 
     print(f"[kb] Embedding {len(to_index)} new/updated notes...")
 
+    texts = [f"{n['title']}\n\n{n['content']}" for n in to_index]
+    vectors = embed_texts(texts)
+
     rows = []
-    for note in to_index:
-        text = f"{note['title']}\n\n{note['content']}"
-        vector = embed_text(text)
+    for note, vector in zip(to_index, vectors):
         rows.append({**note, "vector": vector})
         print(f"[kb]   ✓ {note['path']}")
 
