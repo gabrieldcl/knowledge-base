@@ -11,8 +11,8 @@ what was used in embed.py):
   - "openai"           — OpenAI text-embedding-3-small
 
 Requirements:
-    pip install lancedb python-frontmatter voyageai   # Voyage (default)
-    pip install lancedb python-frontmatter openai     # OpenAI
+    pip install lancedb pandas python-frontmatter voyageai   # Voyage (default)
+    pip install lancedb pandas python-frontmatter openai     # OpenAI
 
 Environment:
     VOYAGE_API_KEY  - required when EMBED_PROVIDER=voyage (default)
@@ -68,7 +68,7 @@ def embed_text(text: str) -> list[float]:
 
 
 def vector_search(query: str, domain: str | None, top: int) -> list[dict]:
-    if not (INDEX_DIR).exists() or "notes" not in lancedb.connect(str(INDEX_DIR)).table_names():
+    if not (INDEX_DIR).exists() or "notes" not in lancedb.connect(str(INDEX_DIR)).list_tables():
         print("[kb] No vector index found. Run embed.py first.", file=sys.stderr)
         return []
 

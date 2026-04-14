@@ -15,8 +15,8 @@ Note: Anthropic's Claude API key cannot be used for embeddings — Claude is a
 generative model only. Voyage AI is Anthropic's recommended embedding solution.
 
 Requirements:
-    pip install lancedb python-frontmatter voyageai   # Voyage (default)
-    pip install lancedb python-frontmatter openai     # OpenAI
+    pip install lancedb pandas python-frontmatter voyageai   # Voyage (default)
+    pip install lancedb pandas python-frontmatter openai     # OpenAI
 
 Environment:
     VOYAGE_API_KEY  - required when EMBED_PROVIDER=voyage (default)
