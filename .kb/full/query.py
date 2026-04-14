@@ -67,21 +67,28 @@ def embed_text(text: str) -> list[float]:
         return result.embeddings[0]
 
 
-def vector_search(query: str, domain: str | None, top: int) -> list[dict]:
+def vector_search(query: str, domain: str | None, top: int) -> tuple[list[dict], bool]:
+    """Returns (results, rate_limited). Falls back gracefully on rate limit."""
     if not (INDEX_DIR).exists() or "notes" not in lancedb.connect(str(INDEX_DIR)).list_tables():
         print("[kb] No vector index found. Run embed.py first.", file=sys.stderr)
-        return []
+        return [], False
 
     db = lancedb.connect(str(INDEX_DIR))
     table = db.open_table("notes")
-    vector = embed_text(query)
+
+    try:
+        vector = embed_text(query)
+    except Exception as e:
+        if "RateLimit" in type(e).__name__ or "rate_limit" in str(e).lower() or "RPM" in str(e):
+            return [], True  # signal rate limit to caller
+        raise
 
     results = table.search(vector).limit(top * 2).to_pandas()
 
     if domain:
         results = results[results["domain"] == domain]
 
-    return results.head(top).to_dict("records")
+    return results.head(top).to_dict("records"), False
 
 
 def keyword_search(query: str, domain: str | None, top: int) -> list[str]:
@@ -117,7 +124,10 @@ def reciprocal_rank_fusion(vector_results: list[dict], keyword_paths: list[str])
 def run(query: str, domain: str | None, top: int):
     print(f"[kb] Query: \"{query}\"\n")
 
-    vector_results = vector_search(query, domain, top)
+    vector_results, rate_limited = vector_search(query, domain, top)
+    if rate_limited:
+        print("[kb] ⚠️  Semantic search rate-limited — falling back to keyword search only.", file=sys.stderr)
+
     keyword_paths = keyword_search(query, domain, top)
     ranked = reciprocal_rank_fusion(vector_results, keyword_paths)
 
