@@ -135,8 +135,8 @@ def run(rebuild: bool = False):
         rows.append({**note, "vector": vector})
         print(f"[kb]   ✓ {note['path']}")
 
-    if "notes" not in db.list_tables():
-        db.create_table("notes", data=rows)
+    if rebuild or "notes" not in db.list_tables():
+        db.create_table("notes", data=rows, mode="overwrite")
     else:
         table = db.open_table("notes")
         # Remove stale entries for re-indexed paths
