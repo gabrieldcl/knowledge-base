@@ -108,11 +108,11 @@ def run(rebuild: bool = False):
 
     existing_hashes: dict[str, str] = {}
 
-    if rebuild and "notes" in db.table_names():
+    if rebuild and "notes" in db.list_tables():
         db.drop_table("notes")
         print("[kb] Dropped existing index for rebuild")
 
-    if "notes" in db.table_names():
+    if "notes" in db.list_tables():
         table = db.open_table("notes")
         for row in table.to_pandas().itertuples():
             existing_hashes[row.path] = row.hash
@@ -133,7 +133,7 @@ def run(rebuild: bool = False):
         rows.append({**note, "vector": vector})
         print(f"[kb]   ✓ {note['path']}")
 
-    if "notes" not in db.table_names():
+    if "notes" not in db.list_tables():
         db.create_table("notes", data=rows)
     else:
         table = db.open_table("notes")
