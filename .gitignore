@@ -2,3 +2,4 @@
 .kb/sessions/
 .kb/write.lock/
 *.tmp.*
+.env

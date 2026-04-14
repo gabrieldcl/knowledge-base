@@ -7,6 +7,9 @@
 
 set -euo pipefail
 
+KB_ROOT="${KB_ROOT:-$HOME/projects/knowledge-base}"
+[ -f "$KB_ROOT/.env" ] && set -a && source "$KB_ROOT/.env" && set +a
+
 INPUT=$(cat)
 
 SESSION_ID=$(echo "$INPUT" | python3 -c "

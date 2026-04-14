@@ -10,6 +10,9 @@
 
 set -euo pipefail
 
+KB_ROOT="${KB_ROOT:-$HOME/projects/knowledge-base}"
+[ -f "$KB_ROOT/.env" ] && set -a && source "$KB_ROOT/.env" && set +a
+
 INPUT=$(cat)
 
 # Extract session ID from hook JSON input
